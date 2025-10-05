@@ -14,7 +14,7 @@ This Telegram bot verifies that users have joined required channels before issui
 ## Setup
 
 1. Add the bot as an administrator to all required channels
-2. Update the channel list in [index.js](file:///C:/Users/suraj/Videos/bot%20acess/telegram-bot/index.js) if needed
+2. Update the channel list in index.js if needed
 3. Run the bot with `npm start`
 
 ## Required Channels
@@ -26,6 +26,10 @@ The bot requires users to join these channels:
 - Private Channel 1: https://t.me/+uMpwtK3Bu8w0MzU1
 - Private Channel 2: https://t.me/+rs2CiB7YDbJlM2M1
 
+## GitHub Repository
+
+See [GITHUB_INSTRUCTIONS.md](GITHUB_INSTRUCTIONS.md) for instructions on how to push this project to your GitHub repository.
+
 ## API Endpoints
 
 ### Verify Token
@@ -34,7 +38,7 @@ POST /verify-token
 Content-Type: application/json
 
 {
-  "token": "1234567890"
+  "token": "A1b2C3d4E5f6"
 }
 ```
 
@@ -70,11 +74,12 @@ Response:
 1. User starts the bot with `/start`
 2. Bot presents buttons to join all required channels
 3. User joins all channels and clicks "Check Membership"
-4. Bot verifies membership and generates a 10-digit token
-5. User enters token on your website
-6. Website calls `/verify-token` to validate the token
-7. If valid, token grants 24-hour access to the website
-8. Token can only be used once
+4. Bot verifies membership and generates a 12-character token with mixed characters
+5. Token is displayed with a "Copy Token" button
+6. User clicks the button to acknowledge copying and uses the token on your website
+7. Website calls `/verify-token` to validate the token
+8. If valid, token grants 24-hour access to the website
+9. Token can only be used once
 
 ## Logging
 
