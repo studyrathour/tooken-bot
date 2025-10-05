@@ -30,11 +30,16 @@ The bot requires users to join these channels:
 
 See [GITHUB_INSTRUCTIONS.md](GITHUB_INSTRUCTIONS.md) for instructions on how to push this project to your GitHub repository.
 
+## Website Integration
+
+See [WEBSITE_INTEGRATION.md](WEBSITE_INTEGRATION.md) for detailed instructions on how to integrate this bot with your website for token-based access control.
+
 ## API Endpoints
 
 ### Verify Token
+
+**POST** `/verify-token`
 ```
-POST /verify-token
 Content-Type: application/json
 
 {
@@ -42,7 +47,9 @@ Content-Type: application/json
 }
 ```
 
-Response:
+**GET** `/verify-token?token=A1b2C3d4E5f6`
+
+Response (Success):
 ```json
 {
   "valid": true,
@@ -51,9 +58,18 @@ Response:
 }
 ```
 
-### Check User Access
+Response (Error):
+```json
+{
+  "valid": false,
+  "message": "Invalid or expired token"
+}
 ```
-POST /check-access
+
+### Check User Access
+
+**POST** `/check-access`
+```
 Content-Type: application/json
 
 {
@@ -61,11 +77,23 @@ Content-Type: application/json
 }
 ```
 
-Response:
+**GET** `/check-access?userId=123456789`
+
+Response (Success):
 ```json
 {
   "hasAccess": true,
-  "message": "User has access"
+  "message": "User has access",
+  "expiresAt": 1764987654321
+}
+```
+
+Response (Error):
+```json
+{
+  "hasAccess": false,
+  "message": "User does not have access",
+  "expiresAt": null
 }
 ```
 

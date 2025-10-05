@@ -168,10 +168,10 @@ bot.help((ctx) => {
     ctx.reply('Send /start to begin the verification process.');
 });
 
-// API endpoint to verify token
+// API endpoint to verify token (POST - original implementation)
 app.post('/verify-token', (req, res) => {
     const { token } = req.body;
-    log(`Token verification request: ${token}`);
+    log(`Token verification request (POST): ${token}`);
     
     // Check if token exists and is valid
     if (!token) {
@@ -205,10 +205,47 @@ app.post('/verify-token', (req, res) => {
     }
 });
 
-// API endpoint to check if user has site access
+// API endpoint to verify token (GET - query parameter version)
+app.get('/verify-token', (req, res) => {
+    const { token } = req.query;
+    log(`Token verification request (GET): ${token}`);
+    
+    // Check if token exists and is valid
+    if (!token) {
+        return res.status(400).json({ valid: false, message: 'Token is required' });
+    }
+    
+    // Check if token has already been used
+    if (usedTokens.has(token)) {
+        log(`Token ${token} already used`);
+        return res.status(400).json({ valid: false, message: 'Token has already been used' });
+    }
+    
+    // Check if token exists in cache
+    const userId = tokenCache.get(token);
+    
+    if (userId) {
+        // Mark token as used
+        usedTokens.add(token);
+        
+        // Remove token from cache (one-time use)
+        tokenCache.del(token);
+        
+        // Grant site access for 24 hours
+        siteAccessCache.set(userId.toString(), true);
+        
+        log(`Token ${token} verified successfully for user ${userId}`);
+        return res.json({ valid: true, message: 'Token verified successfully', userId });
+    } else {
+        log(`Invalid or expired token: ${token}`);
+        return res.status(400).json({ valid: false, message: 'Invalid or expired token' });
+    }
+});
+
+// API endpoint to check if user has site access (POST - original implementation)
 app.post('/check-access', (req, res) => {
     const { userId } = req.body;
-    log(`Site access check for user: ${userId}`);
+    log(`Site access check for user (POST): ${userId}`);
     
     if (!userId) {
         return res.status(400).json({ hasAccess: false, message: 'User ID is required' });
@@ -217,12 +254,55 @@ app.post('/check-access', (req, res) => {
     // Check if user has access
     const hasAccess = siteAccessCache.has(userId.toString());
     
+    // Calculate expiration time (24 hours from now)
+    const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+    
     if (hasAccess) {
         log(`User ${userId} has site access`);
-        return res.json({ hasAccess: true, message: 'User has access' });
+        return res.json({ 
+            hasAccess: true, 
+            message: 'User has access',
+            expiresAt: expirationTime
+        });
     } else {
         log(`User ${userId} does not have site access`);
-        return res.status(403).json({ hasAccess: false, message: 'User does not have access' });
+        return res.status(403).json({ 
+            hasAccess: false, 
+            message: 'User does not have access',
+            expiresAt: null
+        });
+    }
+});
+
+// API endpoint to check if user has site access (GET - query parameter version)
+app.get('/check-access', (req, res) => {
+    const { userId } = req.query;
+    log(`Site access check for user (GET): ${userId}`);
+    
+    if (!userId) {
+        return res.status(400).json({ hasAccess: false, message: 'User ID is required' });
+    }
+    
+    // Check if user has access
+    const hasAccess = siteAccessCache.has(userId.toString());
+    
+    // Calculate expiration time (24 hours from now)
+    const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+    
+    if (hasAccess) {
+        log(`User ${userId} has site access`);
+        return res.json({ 
+            hasAccess: true, 
+            message: 'User has access',
+            expiresAt: expirationTime
+        });
+    } else {
+        log(`User ${userId} does not have site access`);
+        return res.status(403).json({ 
+            hasAccess: false, 
+            message: 'User does not have access',
+            expiresAt: null
+        });
     }
 });
 
